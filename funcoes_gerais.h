@@ -3,6 +3,33 @@ void restart_(){
   ESP.wdtFeed();//Alimenta o Watchdog de Hardware. 8 Segundos.
 }
 
+void barra_progresso(int p1, int p2, int p3, int p4, int p5, int tempo){
+  for (int x=0; x<p5; x++){ // p5 é o valor total da barra
+    display1.drawProgressBar(p1, p2, p3, p4, x); // Onde começa a barra a esquerda
+                                                 // Linha onde a barra vai ficar
+                                                 // Onde finaliza a barra a Direita
+                                                 // Largura da Barra
+                                                 // Valor a ser mostrado na progressao da barra
+    display1.display();
+    delay(tempo);
+  }
+}
+
+void mostrar_display(String t1, String t2, String t3, String t4, byte fonte, float segundos){
+  restart_();
+  int tempo = segundos * 1000;
+  display1.clear();
+  display1.setTextAlignment(TEXT_ALIGN_CENTER);
+  if(fonte == 10){display1.setFont(ArialMT_Plain_10);}
+  if(fonte == 16){display1.setFont(ArialMT_Plain_16);}
+  display1.drawString(64,  0, t1);
+  display1.drawString(64, 16, t2);
+  display1.drawString(64, 32, t3);
+  display1.drawString(64, 48, t4);
+  display1.display();
+  delay(tempo);
+}
+
 void mostrar_terminal (String aviso){
   terminal.print(currentTime);
   terminal.print(" - ");
@@ -67,8 +94,10 @@ void deleteFile(void) {
   //Remove o arquivo
   if(!LittleFS.remove("/log.txt")){
     log_serial("Erro ao remover arquivo!");
+    mostrar_display("Erro ao", "remover o", "arquivo", "", 16, 0); 
   } else {
     log_serial("Arquivo removido com sucesso!");
+    mostrar_display("Arquivo", "removido", "com", "sucesso", 16, 0); 
   }
 }
  
@@ -80,6 +109,7 @@ void writeFile(String msg) {
  
   if(!rFile){
     log_serial("Erro ao abrir arquivo!");
+    mostrar_display("Erro ao", "abrir o", "arquivo", ":(", 16, 2); 
   } else {
     rFile.println(msg);
     log_serial(msg);
@@ -109,12 +139,16 @@ void openFS(void){
   //Abre o sistema de arquivos
   if(!LittleFS.begin()){
     log_serial("Erro ao abrir o sistema de arquivos");
+    mostrar_display("Erro ao", "abrir o", "sistema de", "arquivos", 16, 1); 
   } else {
     log_serial("Sistema de arquivos aberto com sucesso!");
+    //mostrar_display("FS", "aberto", "com", "sucesso", 16, 1);
   }
+  delay(tempo);
 }
 
 void handleRoot() {
+  mostrar_display("Modo Config", "Digite as", "informacoes", "", 16, 0);
   //Go to http://192.168.4.1 in a web browser
 String html  = "<!DOCTYPE html><head><html lang='pt-br'><meta charset='UTF-8'><meta http-equiv='X-UA-Compatible' content='IE=edge'><meta name='viewport' content='width=device-width, initial-scale=1'><title>Configurar WIFI</title>";
        html += "</head><body align='center'>";
@@ -141,7 +175,8 @@ String html =  "<!DOCTYPE html><head><html lang='pt-br'><meta charset='UTF-8'><m
   REDE  = server.arg("txt_ssid"); REDE.trim();  writeFile(REDE);
   SENHA = server.arg("txt_pw");   SENHA.trim(); writeFile(SENHA);
   NOME  = server.arg("txt_nome"); NOME.trim();  writeFile(NOME);
-
+  //mostrar(1, false,  "Sucesso", REDE, SENHA, NOME,0,0,0,0);
+  mostrar_display("Salvo", REDE, SENHA, NOME, 16, 1);
 }
 
 void config_rede(){
@@ -188,52 +223,68 @@ void Formatar_data_hora(){ // A cada 8 segundos atualiza a Hora, Apita de Hora e
 void iniciar_OTA(){
   ArduinoOTA.setHostname("Fonte");
   ArduinoOTA.begin();
-  ArduinoOTA.onStart([]() { LittleFS.end(); log_serial("Atualizando..."); });
-  ArduinoOTA.onEnd([]()   { log_serial("Fim da Atualizacao"); });
+  ArduinoOTA.onStart([]() {
+      LittleFS.end();
+      display1.clear();
+      display1.setFont(ArialMT_Plain_16);
+      display1.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
+      display1.drawString(display1.getWidth()/2, display1.getHeight()/2 - 10, "Atualizando...");
+      display1.display();
+  });
+  ArduinoOTA.onEnd([](){
+      mostrar_display("UPDATE", "OTA", "", "OK", 16, 1);    
+  });
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total){
     unsigned int progress1;
-    if(progress1 != progress){ progress1 = progress;}
-    log_serial("Atualizando"); 
+    display1.drawProgressBar(4, 32, 120, 8, progress / (total / 100) );
+    display1.display(); 
     });
-  ArduinoOTA.onError([](ota_error_t error) { log_serial("Erro ao Atualizar"); });
+
 }
 
 void conecta_wifi_blynk(char* ssid_, char* pw_){
 
   if(WiFi.status() != WL_CONNECTED){
-    int contador = 0;
+    mostrar_display("Desconectando", "WIFI", "", "", 16, 1);
     WiFi.disconnect(); 
     delay(500);
     WiFi.mode(WIFI_STA);
-    delay(100);
+    mostrar_display("Conectando", "WIFI", "", ssid, 16, 1);
+    delay(500);
     WiFi.begin(ssid_, pw_);
-    delay(100);
-    while ( contador <= 20) {
+    delay(500);
+    int x = 0;
+    String y = "";
+    while ( x <= 20) {
       restart_();
-      if (WiFi.status() == WL_CONNECTED){ contador = 50; break; }
-      delay(1000);
+      if (WiFi.status() == WL_CONNECTED){ x = 50; break; }
+      x++;
+      y = String(x) + " de 20";
+      mostrar_display("Conectando", "Ao WIFI", y, "", 16, 1);
     }
     if (WiFi.status() == WL_CONNECTED){
-      log_serial("WIFI OK");
+      mostrar_display("", "WIFI OK", "", "",16, 1);
     }
     else{
-      log_serial("WIFI ERRO");
+      mostrar_display("", "WIFI", "Nao conectado", "",16, 1);
     }
   }
   
   if(!Blynk.connected()) {
       if (WiFi.status() == WL_CONNECTED){ // Só entra se já tiver conectado no WIFI
         Blynk.disconnect();
+        mostrar_display("Conectando", "", "Blynk" , "",16, 1);
         Blynk.config(auth);
         delay(500);
+        restart_();
         Blynk.connect(9000);
         error_conect = Blynk.connected();
         if (!error_conect) {
-          log_serial("Blynk Erro");
+          mostrar_display("CONEXAO", "Blynk", "FALHOU" , "",16, 1);
         }
         else{
           Blynk.run();
-          log_serial("Blynk OK");
+          mostrar_display("CONEXAO", "Blynk", "OK", "",16, 1);
         }
         error_conect = Blynk.connected();
     }

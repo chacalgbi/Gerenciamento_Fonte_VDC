@@ -12,5 +12,9 @@
 #include <WidgetRTC.h>
 #include <TimeLib.h>
 #include <Adafruit_Sensor.h>
+#include <Adafruit_GFX.h>
+#include <Wire.h>
+#include <SSD1306Wire.h>
+#include <Adafruit_ADS1X15.h>
 
 #define config_wifi 16 // Input
