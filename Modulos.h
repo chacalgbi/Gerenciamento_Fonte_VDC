@@ -31,5 +31,31 @@ float ADS1115(String ADSx, byte porta_adc, byte QTD_leituras, float multiplicado
   if(ADSx == "ADS2"){tensao = ads2.computeVolts(media);}
   tensao = tensao * multiplicador;
   delay(10); // Tempo entre leituras
+  if(tensao < 0.03){tensao = 0;}
   return tensao;
+}
+
+void procura_i2c(){
+#define TEMPOLEITURA 100
+#define TEMPOESPERA 3000
+byte endereco;
+byte codigoResultado=0;
+byte dispositivosEncontrados=0;
+  
+  for (endereco=0; endereco<128; endereco++){
+    Wire.beginTransmission(endereco);
+    codigoResultado = Wire.endTransmission();
+    if (codigoResultado==0){
+      terminal.println("Encontrado: " + String(endereco,HEX)); terminal.flush();
+      dispositivosEncontrados++;
+      delay(TEMPOESPERA);
+    }
+    delay(TEMPOLEITURA);
+  }
+  if (dispositivosEncontrados>0){
+    terminal.println("Total: " + String(dispositivosEncontrados)); terminal.flush();
+  }
+  else{
+    terminal.println("Nenhum Dispositivo encontrado"); terminal.flush();
+  }
 }

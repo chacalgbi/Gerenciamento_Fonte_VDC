@@ -232,7 +232,7 @@ void iniciar_OTA(){
       display1.display();
   });
   ArduinoOTA.onEnd([](){
-      mostrar_display("UPDATE", "OTA", "", "OK", 16, 1);    
+      mostrar_display("UPDATE", "", "OK", "", 16, 0);    
   });
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total){
     unsigned int progress1;
@@ -245,11 +245,11 @@ void iniciar_OTA(){
 void conecta_wifi_blynk(char* ssid_, char* pw_){
 
   if(WiFi.status() != WL_CONNECTED){
-    mostrar_display("Desconectando", "WIFI", "", "", 16, 1);
+    mostrar_display("Desconectando", "WIFI", "", "", 16, 0);
     WiFi.disconnect(); 
     delay(500);
     WiFi.mode(WIFI_STA);
-    mostrar_display("Conectando", "WIFI", "", ssid, 16, 1);
+    mostrar_display("Conectando", "WIFI", "", ssid, 16, 0);
     delay(500);
     WiFi.begin(ssid_, pw_);
     delay(500);
@@ -273,7 +273,7 @@ void conecta_wifi_blynk(char* ssid_, char* pw_){
   if(!Blynk.connected()) {
       if (WiFi.status() == WL_CONNECTED){ // Só entra se já tiver conectado no WIFI
         Blynk.disconnect();
-        mostrar_display("Conectando", "", "Blynk" , "",16, 1);
+        mostrar_display("Conectando", "", "Blynk" , "",16, 0);
         Blynk.config(auth);
         delay(500);
         restart_();
@@ -284,7 +284,7 @@ void conecta_wifi_blynk(char* ssid_, char* pw_){
         }
         else{
           Blynk.run();
-          mostrar_display("CONEXAO", "Blynk", "OK", "",16, 1);
+          mostrar_display("CONEXAO", "Blynk", "OK", "",16, 0);
         }
         error_conect = Blynk.connected();
     }
