@@ -204,8 +204,9 @@ BLYNK_WRITE(V1){ // Comandos terminal
   }
 }
 
-BLYNK_READ(V2) {Blynk.virtualWrite(V2, valores_DC);}
-BLYNK_READ(V3) {Blynk.virtualWrite(V3, valores_DC1);}
+BLYNK_READ(V2) {Blynk.virtualWrite(V2, valores_DC1);}
+BLYNK_READ(V3) {Blynk.virtualWrite(V3, valores_DC2);}
+BLYNK_READ(V4) {Blynk.virtualWrite(V4, valores_DC3);}
 
 void limites(){
   aviso = "";
@@ -302,11 +303,11 @@ float ACS712(){
 void ler_ads1115(){
   inverter_display = !inverter_display;
 
-  ACS712_v = ACS712();
-  ACS712_i = ACS712_v / 0.1;
+  //ACS712_v = ACS712();
+  //ACS712_i = ACS712_v / 0.1;
 
-  AC_V = String(ACS712_v,3) + "V";
-  AC_I = String(ACS712_i,3) + "A";
+  //AC_V = String(ACS712_v,3) + "V";
+  //AC_I = String(ACS712_i,3) + "A";
 
   volts = ADS1115("ADS2", 3, 10, v_const);
      i1 = ADS1115("ADS1", 3, 10, i1_const);
@@ -315,22 +316,26 @@ void ler_ads1115(){
      i4 = ADS1115("ADS1", 0, 10, i4_const);
      i_total = i1 + i2 + i3 + i4;
      potencia = i_total * volts;
+     pot1 = i1 * volts;
+     pot2 = i2 * volts;
+     pot3 = i3 * volts;
+     pot4 = i4 * volts;
 
 
-  volts_str    = String(volts,1)    + "V"; 
-  potencia_str = String(potencia,1) + "W";
+  volts_str    = String(volts,0)    + "V"; 
+  potencia_str = String(potencia) + "W";
   i_total_str  = String(i_total,2)  + "A";
-  i1_str    = "P1 " + String(i1, 2) + "A";
-  i2_str    = "P2 " + String(i2, 2) + "A";
-  i3_str    = "P3 " + String(i3, 2) + "A";
-  i4_str    = "P4 " + String(i4, 2) + "A";
+  i1_str    = "P1 " + String(i1, 2) + "A " + String(pot1) + "W";
+  i2_str    = "P2 " + String(i2, 2) + "A " + String(pot2) + "W";
+  i3_str    = "P3 " + String(i3, 2) + "A " + String(pot3) + "W";
+  i4_str    = "P4 " + String(i4, 2) + "A " + String(pot4) + "W";
 
-  
-  valores_DC  = i1_str + "  " + i2_str + "  " + i3_str + "  " + i4_str;
   valores_DC1 = volts_str + "  " + i_total_str + "  " + potencia_str;
+  valores_DC2 = i1_str + "  " + i2_str;
+  valores_DC3 = i3_str + "  " + i4_str;
 
   if(inverter_display)  { mostrar_display(i1_str, i2_str, i3_str, i4_str, 16, 0); }
-  else{ mostrar_display(volts_str, conexao, AC_V, AC_I, 16, 0); }
+  else{ mostrar_display(volts_str, conexao, IP, sinal_wifi, 16, 0); }
   
 }
 
@@ -340,6 +345,10 @@ void normal_loop(){
   timer.run();
   if(error_conect == true){ Blynk.run(); };
   error_conect = Blynk.connected();
+
+  if(digitalRead(config_wifi)){
+    mostrar_display("PEREIRA", "INVERSORES", "(81)9.8808", "9699", 16, 3);
+  }
 }
 
 void setup() {

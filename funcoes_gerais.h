@@ -285,6 +285,9 @@ void conecta_wifi_blynk(char* ssid_, char* pw_){
         else{
           Blynk.run();
           mostrar_display("CONEXAO", "Blynk", "OK", "",16, 0);
+          if(iniciar == true){
+            mostrar_terminal("Reconectado!");
+          }
         }
         error_conect = Blynk.connected();
     }

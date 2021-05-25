@@ -36,8 +36,6 @@ float ADS1115(String ADSx, byte porta_adc, byte QTD_leituras, float multiplicado
 }
 
 void procura_i2c(){
-#define TEMPOLEITURA 100
-#define TEMPOESPERA 3000
 byte endereco;
 byte codigoResultado=0;
 byte dispositivosEncontrados=0;
@@ -48,9 +46,9 @@ byte dispositivosEncontrados=0;
     if (codigoResultado==0){
       terminal.println("Encontrado: " + String(endereco,HEX)); terminal.flush();
       dispositivosEncontrados++;
-      delay(TEMPOESPERA);
+      delay(100);
     }
-    delay(TEMPOLEITURA);
+    delay(50);
   }
   if (dispositivosEncontrados>0){
     terminal.println("Total: " + String(dispositivosEncontrados)); terminal.flush();
